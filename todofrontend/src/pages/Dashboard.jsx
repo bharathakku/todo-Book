@@ -14,8 +14,10 @@ const Dashboard = () => {
   const fetchBooks = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/books', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (!res.ok) throw new Error('Failed to fetch books');
       const data = await res.json();
@@ -29,7 +31,7 @@ const Dashboard = () => {
   const handleAddBook = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:5000/api/books', {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +51,7 @@ const Dashboard = () => {
   const handleDeleteBook = async (id) => {
     if (!window.confirm('Are you sure you want to delete this book?')) return;
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/books/${id}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -73,7 +75,7 @@ const Dashboard = () => {
   const handleUpdateBook = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/books/${editingBookId}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${editingBookId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

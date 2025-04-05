@@ -15,14 +15,13 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to fetch books');
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch books');
       setBooks(data);
     } catch (error) {
+      console.error('Fetch Error:', error);
       alert(error.message);
       window.location.href = '/login';
     }
@@ -31,35 +30,44 @@ const Dashboard = () => {
   const handleAddBook = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(newBook)
-    });
-    const data = await res.json();
-    if (res.ok) {
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newBook)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to add book');
+
       setBooks(prev => [...prev, data]);
       setNewBook({ title: '', author: '', description: '' });
-    } else {
-      alert(data.message || 'Failed to add book');
+    } catch (error) {
+      alert(error.message);
     }
   };
 
   const handleDeleteBook = async (id) => {
     if (!window.confirm('Are you sure you want to delete this book?')) return;
+
     const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (res.ok) {
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to delete book');
+
       setBooks(prev => prev.filter(book => book._id !== id));
-    } else {
-      alert(data.message || 'Failed to delete book');
+    } catch (error) {
+      alert(error.message);
     }
   };
 
@@ -75,69 +83,102 @@ const Dashboard = () => {
   const handleUpdateBook = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${editingBookId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(editFormData)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setBooks(prev => prev.map(book => book._id === editingBookId ? data : book));
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${editingBookId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editFormData)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update book');
+
+      setBooks(prev => prev.map(book => (book._id === editingBookId ? data : book)));
       setEditingBookId(null);
       setEditFormData({ title: '', author: '', description: '' });
-    } else {
-      alert(data.message || 'Failed to update book');
+    } catch (error) {
+      alert(error.message);
     }
   };
 
-  
-    return (
-      <div className="dashboard-container">
-        <h2>Your Books</h2>
-        <button className="logout-btn" onClick={() => {
+  return (
+    <div className="dashboard-container">
+      <h2>Your Books</h2>
+      <button
+        className="logout-btn"
+        onClick={() => {
           localStorage.removeItem('token');
           setBooks([]);
           window.location.href = '/login';
-        }}>
-          Logout
-        </button>
-    
-        <form className="book-form" onSubmit={handleAddBook}>
-          <input type="text" placeholder="Title" value={newBook.title} onChange={(e) => setNewBook(prev => ({ ...prev, title: e.target.value }))} required />
-          <input type="text" placeholder="Author" value={newBook.author} onChange={(e) => setNewBook(prev => ({ ...prev, author: e.target.value }))} required />
-          <textarea placeholder="Description" value={newBook.description} onChange={(e) => setNewBook(prev => ({ ...prev, description: e.target.value }))} />
-          <button type="submit">Add Book</button>
-        </form>
-    
-        <ul className="book-list">
-          {books.map(book => (
-            <li className="book-card" key={book._id}>
-              {editingBookId === book._id ? (
-                <form onSubmit={handleUpdateBook}>
-                  <input type="text" value={editFormData.title} onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))} required />
-                  <input type="text" value={editFormData.author} onChange={(e) => setEditFormData(prev => ({ ...prev, author: e.target.value }))} required />
-                  <textarea value={editFormData.description} onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))} />
-                  <button type="submit" className="edit-btn">Save</button>
-                  <button type="button" onClick={() => setEditingBookId(null)}>Cancel</button>
-                </form>
-              ) : (
-                <>
-                  <strong>{book.title}</strong> by {book.author}
-                  <p>{book.description}</p>
-                  <button className="edit-btn" onClick={() => startEditing(book)}>Edit</button>
-                  <button className="delete-btn" onClick={() => handleDeleteBook(book._id)}>Delete</button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-    
-  
+        }}
+      >
+        Logout
+      </button>
+
+      <form className="book-form" onSubmit={handleAddBook}>
+        <input
+          type="text"
+          placeholder="Title"
+          value={newBook.title}
+          onChange={(e) => setNewBook(prev => ({ ...prev, title: e.target.value }))}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Author"
+          value={newBook.author}
+          onChange={(e) => setNewBook(prev => ({ ...prev, author: e.target.value }))}
+          required
+        />
+        <textarea
+          placeholder="Description"
+          value={newBook.description}
+          onChange={(e) => setNewBook(prev => ({ ...prev, description: e.target.value }))}
+        />
+        <button type="submit">Add Book</button>
+      </form>
+
+      <ul className="book-list">
+        {books.map(book => (
+          <li className="book-card" key={book._id}>
+            {editingBookId === book._id ? (
+              <form onSubmit={handleUpdateBook}>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
+                  required
+                />
+                <input
+                  type="text"
+                  value={editFormData.author}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, author: e.target.value }))}
+                  required
+                />
+                <textarea
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                />
+                <button type="submit" className="edit-btn">Save</button>
+                <button type="button" onClick={() => setEditingBookId(null)}>Cancel</button>
+              </form>
+            ) : (
+              <>
+                <strong>{book.title}</strong> by {book.author}
+                <p>{book.description}</p>
+                <button className="edit-btn" onClick={() => startEditing(book)}>Edit</button>
+                <button className="delete-btn" onClick={() => handleDeleteBook(book._id)}>Delete</button>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 export default Dashboard;

@@ -2,35 +2,28 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 
-const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const navigate = useNavigate();
+const apiUrl = import.meta.env.VITE_API_URL;
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+const Register = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+      const res = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      console.log("Raw response:", res);
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
 
-      if (res.ok) {
-        alert('Registration successful! You can now log in.');
-        navigate('/login');
-      } else {
-        throw new Error(data.message || 'Registration failed');
-      }
+      alert('Registration successful. Please login.');
+      navigate('/login');
     } catch (error) {
-      console.error('Register Error:', error);
       alert(error.message);
     }
   };
@@ -41,31 +34,28 @@ const Register = () => {
       <form className="auth-form" onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
-          placeholder="Full Name"
+          placeholder="Name"
           value={formData.name}
-          onChange={handleChange}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
         <input
           type="email"
-          name="email"
           placeholder="Email"
           value={formData.email}
-          onChange={handleChange}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
         />
         <input
           type="password"
-          name="password"
           placeholder="Password"
           value={formData.password}
-          onChange={handleChange}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required
         />
         <button type="submit">Register</button>
       </form>
-      <p className="switch-auth">
+      <p>
         Already have an account? <a href="/login">Login</a>
       </p>
     </div>

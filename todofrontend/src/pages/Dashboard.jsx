@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const Dashboard = () => {
   const [books, setBooks] = useState([]);
   const [newBook, setNewBook] = useState({ title: '', author: '', description: '' });
@@ -14,7 +16,7 @@ const Dashboard = () => {
   const fetchBooks = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
+      const res = await fetch(`${apiUrl}/api/books`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -32,7 +34,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books`, {
+      const res = await fetch(`${apiUrl}/api/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${id}`, {
+      const res = await fetch(`${apiUrl}/api/books/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,7 +87,7 @@ const Dashboard = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/books/${editingBookId}`, {
+      const res = await fetch(`${apiUrl}/api/books/${editingBookId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

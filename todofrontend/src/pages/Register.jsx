@@ -19,6 +19,7 @@ const Register = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+      console.log("Raw response:", res);
 
       const data = await res.json();
 

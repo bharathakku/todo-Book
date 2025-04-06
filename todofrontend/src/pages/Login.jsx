@@ -13,32 +13,24 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const apiUrl = process.env.REACT_APP_API_URL;
-    console.log("API URL:", apiUrl); // ✅ Debug line
-
     try {
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch (jsonError) {
-        data = { message: 'Invalid response from server' };
-      }
+      const data = await res.json();
 
-      if (res.ok) {
+      if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
         navigate('/dashboard');
       } else {
-        alert(data.message || 'Login failed');
+        throw new Error(data.message || 'Login failed');
       }
-    } catch (err) {
-      console.error("Login Error:", err);
-      alert("Something went wrong. Please try again later.");
+    } catch (error) {
+      console.error('Login Error:', error);
+      alert(error.message);
     }
   };
 
@@ -65,7 +57,7 @@ const Login = () => {
         <button type="submit">Login</button>
       </form>
       <p className="switch-auth">
-        Don't have an account? <a href="/register">Register</a>
+        Don’t have an account? <a href="/register">Register</a>
       </p>
     </div>
   );
